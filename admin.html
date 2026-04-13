@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paw & Moods | Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="admin">
+    <main class="page-wrap fade-in">
+      <section class="card result-card">
+        <p class="eyebrow">🔒 Admin Dashboard</p>
+        <h1>Paw & Moods Code Manager</h1>
+        <p class="subtitle">Manage reward code validity and usage.</p>
+
+        <div id="adminError" class="error-message" aria-live="polite"></div>
+
+        <form id="adminLoginForm" class="admin-block">
+          <label for="adminPassword">Admin password</label>
+          <input id="adminPassword" type="password" required placeholder="Enter admin password" />
+          <button type="submit">Login</button>
+        </form>
+
+        <section id="adminApp" class="admin-block hidden">
+          <form id="addCodeForm" class="code-form">
+            <label for="codeValue">Code</label>
+            <input id="codeValue" type="text" placeholder="PM26-ST01-W0105" required />
+
+            <label for="purchaseDate">Purchase date</label>
+            <input id="purchaseDate" type="date" required />
+
+            <label for="codeStatus">Status</label>
+            <select id="codeStatus">
+              <option value="unused">unused</option>
+              <option value="used">used</option>
+            </select>
+
+            <button type="submit">Add New Code</button>
+          </form>
+
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Type</th>
+                  <th>Purchase Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="codesTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script src="admin.js"></script>
+  </body>
+</html>
