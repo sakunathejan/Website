@@ -1,6 +1,6 @@
 const STORAGE_KEY = "pawMoodsCode";
 const ACCESS_KEY = "pawMoodsRewardAccess";
-const API_BASE = window.API_BASE || "";
+const API_BASE = window.API_BASE || "https://your-backend-url.onrender.com";
 
 function getTailValue(code) {
   const lastTwo = code.slice(-2);
@@ -8,37 +8,31 @@ function getTailValue(code) {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
-function toUserMessage(reason) {
-  switch (reason) {
-    case "EXPIRED":
-      return "This code has expired";
-    case "USED":
-      return "This code is already used";
-    case "NOT_FOUND":
-      return "Invalid or unauthorized code";
-    case "INVALID_FORMAT":
-      return "Invalid Code";
-    default:
-      return "Could not validate code right now";
-  }
+function getStatusMessage(status) {
+  if (status === "expired") return "This code has expired";
+  if (status === "used") return "This code has already been used";
+  if (status === "invalid") return "Invalid code";
+  return "Server error. Please try again later";
 }
 
+// Validate a code with backend API instead of local pattern checks.
 async function validateCodeFromApi(rawCode) {
   const code = rawCode.trim().toUpperCase();
   const response = await fetch(
     `${API_BASE}/validate-code/${encodeURIComponent(code)}`
   );
   const data = await response.json();
-  return { ok: response.ok, data, code };
+  return { code, data };
 }
 
-function storeAccessSession(data) {
-  localStorage.setItem(STORAGE_KEY, data.code);
+// Save successful validation details for result-page protection.
+function storeAccessSession(code, type) {
+  localStorage.setItem(STORAGE_KEY, code);
   sessionStorage.setItem(
     ACCESS_KEY,
     JSON.stringify({
-      code: data.code,
-      type: data.type,
+      code,
+      type,
       validatedAt: Date.now(),
     })
   );
@@ -59,8 +53,7 @@ function clearAccessSession() {
 }
 
 function redirectHomeWithError(message) {
-  const target = `index.html?error=${encodeURIComponent(message)}`;
-  window.location.href = target;
+  window.location.href = `index.html?error=${encodeURIComponent(message)}`;
 }
 
 function setupHomePage() {
@@ -69,6 +62,7 @@ function setupHomePage() {
   const error = document.getElementById("errorMessage");
   if (!form || !input || !error) return;
 
+  // Show any forwarded error from guarded pages.
   const params = new URLSearchParams(window.location.search);
   const initialError = params.get("error");
   if (initialError) {
@@ -80,16 +74,27 @@ function setupHomePage() {
     error.textContent = "";
 
     try {
-      const { ok, data, code } = await validateCodeFromApi(input.value);
-      if (!ok || !data.valid) {
-        error.textContent = toUserMessage(data.reason);
+      // 1) Capture code and call backend validation endpoint.
+      const { code, data } = await validateCodeFromApi(input.value);
+
+      // 2) Handle backend response and route based on reward type.
+      if (data.status === "valid" && data.type === "W") {
+        storeAccessSession(code, "W");
+        window.location.href = "winner.html";
         return;
       }
 
-      storeAccessSession({ code, type: data.type });
-      window.location.href = data.type === "W" ? "winner.html" : "try.html";
+      if (data.status === "valid" && data.type === "T") {
+        storeAccessSession(code, "T");
+        window.location.href = "try.html";
+        return;
+      }
+
+      // 3) Show expected user-facing messages for non-valid statuses.
+      error.textContent = getStatusMessage(data.status);
     } catch (requestError) {
-      error.textContent = "Server error. Please try again.";
+      // 4) Network/server failure fallback message.
+      error.textContent = "Server error. Please try again later";
     }
   });
 }
@@ -115,10 +120,10 @@ async function setupResultPage() {
   }
 
   try {
-    const { ok, data, code } = await validateCodeFromApi(savedCode);
-    if (!ok || !data.valid || data.type !== expectedType) {
+    const { code, data } = await validateCodeFromApi(savedCode);
+    if (data.status !== "valid" || data.type !== expectedType) {
       clearAccessSession();
-      redirectHomeWithError(toUserMessage(data.reason));
+      redirectHomeWithError(getStatusMessage(data.status));
       return;
     }
 
@@ -145,15 +150,12 @@ async function setupResultPage() {
     }
   } catch (requestError) {
     clearAccessSession();
-    redirectHomeWithError("Server error. Please try again.");
+    redirectHomeWithError("Server error. Please try again later");
   }
 }
 
 if (document.body.dataset.page === "home") {
   setupHomePage();
-} else if (
-  document.body.dataset.page === "winner" ||
-  document.body.dataset.page === "try"
-) {
+} else if (document.body.dataset.page === "winner" || document.body.dataset.page === "try") {
   setupResultPage();
 }
