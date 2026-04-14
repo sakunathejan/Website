@@ -433,11 +433,6 @@ async function applyGlobalBranding() {
         document.title = document.title.replace("Paw & Moods", bName);
       }
 
-      // Update the main index eyebrow (secretAdminTrigger)
-      const secretTrigger = document.getElementById("secretAdminTrigger");
-      if (secretTrigger && secretTrigger.textContent.includes("Paw & Moods")) {
-        secretTrigger.textContent = `\u{1F43E} ${bName} \u{2728}`;
-      }
     }
   } catch(e) {}
 }

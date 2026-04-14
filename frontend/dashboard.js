@@ -685,10 +685,14 @@ async function loadSettings() {
     if (document.title.includes("Paw & Moods")) {
       document.title = document.title.replace("Paw & Moods", businessNameString);
     }
-    const dashSidebarTitle = document.querySelector(".sidebar-header h2");
-    if (dashSidebarTitle && dashSidebarTitle.textContent.includes("Paw & Moods")) {
-      dashSidebarTitle.textContent = dashSidebarTitle.textContent.replace("Paw & Moods", businessNameString);
-    }
+    document.querySelectorAll(".brand-text").forEach(el => {
+      el.textContent = businessNameString;
+    });
+    document.querySelectorAll(".subtitle").forEach(el => {
+      if (el.textContent.includes("Paw & Moods")) {
+        el.textContent = el.textContent.replace("Paw & Moods", businessNameString);
+      }
+    });
 
     const bName = document.getElementById("setBusinessName");
     if(bName) bName.value = businessNameString;
@@ -769,15 +773,23 @@ function bindSettingsForms() {
   if(formGen) formGen.addEventListener("submit", (e) => {
     e.preventDefault();
     submitWithLoading(e.submitter, async () => {
+      const newBusinessName = document.getElementById("setBusinessName").value;
       await updateSettings({
         general: {
-          businessName: document.getElementById("setBusinessName").value,
+          businessName: newBusinessName,
           contactPhone: document.getElementById("setContactPhone").value,
           whatsappNumber: document.getElementById("setGeneralWhatsapp").value,
           currency: document.getElementById("setCurrency").value,
           timezone: document.getElementById("setTimezone").value,
         }
       });
+      // Instantly update the UI without refresh
+      document.querySelectorAll(".brand-text").forEach(el => {
+        el.textContent = newBusinessName || "Paw & Moods";
+      });
+      if (document.title.includes("| Dashboard")) {
+        document.title = `${newBusinessName || "Paw & Moods"} | Dashboard`;
+      }
     });
   });
 

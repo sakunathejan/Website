@@ -184,10 +184,9 @@ async function applyAdminBranding() {
       if (document.title.includes("Paw & Moods")) {
         document.title = document.title.replace("Paw & Moods", bName);
       }
-      const posTitle = document.querySelector(".pos-login-card h1");
-      if (posTitle && posTitle.textContent.includes("Paw & Moods")) {
-        posTitle.textContent = posTitle.textContent.replace("Paw & Moods", bName);
-      }
+      document.querySelectorAll(".brand-text").forEach(el => {
+        el.textContent = bName;
+      });
     }
   } catch (e) {}
 }
