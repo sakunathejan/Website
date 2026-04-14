@@ -1,4 +1,4 @@
-const API_BASE = window.API_BASE || "";
+const API_BASE = window.API_BASE || "https://website-m71e.onrender.com";
 const ADMIN_TOKEN_KEY = "pawMoodsAdminToken";
 const loginWrap = document.getElementById("loginWrap");
 const loginForm = document.getElementById("adminLoginForm");
@@ -70,7 +70,17 @@ async function apiRequest(path, options = {}) {
     ...options,
     headers,
   });
-  const data = await response.json();
+  const contentType = response.headers.get("content-type") || "";
+  let data = {};
+  
+  if (contentType.includes("application/json")) {
+    data = await response.json();
+  } else {
+    // If we receive an HTML 404 page (e.g. from Netlify) instead of JSON, we handle it natively.
+    if (!response.ok) {
+      throw new Error(`Server connection failed. Make sure your API_BASE (${API_BASE}) is correct and the backend is running.`);
+    }
+  }
 
   if (!response.ok) {
     const message = normalizeErrorMessage(data.message || "Request failed");

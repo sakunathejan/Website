@@ -79,6 +79,9 @@ const settingsSchema = new mongoose.Schema({
     darkMode: { type: Boolean, default: false },
     enableAnimations: { type: Boolean, default: true },
     defaultTab: { type: String, default: "dashboard" }
+  },
+  security: {
+    secretAdminCode: { type: String, default: "admin777" }
   }
 }, { timestamps: true });
 const AppSettings = mongoose.model("AppSettings", settingsSchema);
@@ -654,6 +657,23 @@ app.get("/api/public-settings", async (req, res) => {
   }
 });
 
+app.post("/api/verify-secret", async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.json({ valid: false });
+    
+    const settings = await getSettings();
+    const actualCode = settings.security?.secretAdminCode || "admin777";
+    
+    if (code === actualCode) {
+      return res.json({ valid: true });
+    }
+    return res.json({ valid: false });
+  } catch(error) {
+    return res.status(500).json({ valid: false });
+  }
+});
+
 // Settings API PUT
 app.put("/settings", verifyAdmin, async (req, res) => {
   try {
@@ -664,6 +684,7 @@ app.put("/settings", verifyAdmin, async (req, res) => {
     if (payload.rewards) settings.rewards = { ...settings.rewards, ...payload.rewards };
     if (payload.whatsapp) settings.whatsapp = { ...settings.whatsapp, ...payload.whatsapp };
     if (payload.preferences) settings.preferences = { ...settings.preferences, ...payload.preferences };
+    if (payload.security) settings.security = { ...settings.security, ...payload.security };
     
     await settings.save();
     return res.json({ message: "Settings updated successfully", settings });

@@ -1,4 +1,4 @@
-const API_BASE = window.API_BASE || "";
+const API_BASE = window.API_BASE || "https://website-m71e.onrender.com";
 const ADMIN_TOKEN_KEY = "pawMoodsAdminToken";
 const DASH_SECTION_KEY = "pawMoodsDashboardSection";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -720,6 +720,10 @@ async function loadSettings() {
     if(animTog) animTog.checked = data.preferences?.enableAnimations !== false;
     const defTab = document.getElementById("setDefaultTab");
     if(defTab) defTab.value = data.preferences?.defaultTab || "dashboard";
+
+    // Security
+    const sSecret = document.getElementById("setSecretAdminCode");
+    if (sSecret) sSecret.value = data.security?.secretAdminCode || "admin777";
   } catch (err) {
     console.error(err);
   }
@@ -835,6 +839,18 @@ function bindSettingsForms() {
       } catch(err) {
         showToast(err.message || "Failed to update password");
       }
+    });
+  });
+
+  const formSecret = document.getElementById("settingsSecretForm");
+  if(formSecret) formSecret.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitWithLoading(e.submitter, async () => {
+      await updateSettings({
+        security: {
+          secretAdminCode: document.getElementById("setSecretAdminCode").value
+        }
+      });
     });
   });
 
