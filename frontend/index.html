@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paw & Moods | Unlock Your Surprise</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body data-page="home">
+  <main class="page-wrap fade-in">
+    <section class="card code-card">
+      <p class="eyebrow">🐾 Paw & Moods ✨</p>
+      <h1>Unlock Your Surprise 💜</h1>
+      <p class="subtitle">Enter your reward code to see what you got</p>
+      <p id="minOrderText" class="subtitle" style="font-size: 0.85rem; margin-top: -10px; opacity: 0.8; height: 20px;"></p>
+
+      <form id="codeForm" class="code-form" novalidate>
+        <label for="rewardCode" class="sr-only">Enter reward code</label>
+        <input id="rewardCode" name="rewardCode" type="text" maxlength="18" autocomplete="off"
+          placeholder="e.g. PM26-ST01-W0105" required />
+        <button type="submit">Reveal My Reward</button>
+      </form>
+
+      <p id="errorMessage" class="error-message" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

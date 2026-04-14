@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paw & Moods | Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="admin">
+    <div id="toast" class="toast hidden" aria-live="polite"></div>
+
+    <main class="pos-login-wrap fade-in" id="loginWrap">
+      <section class="card result-card pos-login-card">
+        <p class="eyebrow">🔒 Admin Access</p>
+        <h1>Paw & Moods POS</h1>
+        <p class="subtitle">Sign in to manage orders, customers and reward codes.</p>
+        <div id="adminError" class="error-message" aria-live="polite"></div>
+        <form id="adminLoginForm" class="admin-block">
+          <label for="adminPassword">Admin password</label>
+          <div class="password-field">
+            <input id="adminPassword" type="password" required placeholder="Enter admin password" />
+            <button type="button" class="password-toggle" data-target="adminPassword">Show</button>
+          </div>
+          <button type="submit">Login to Dashboard</button>
+          <button type="button" id="forgotToggleBtn" class="mini-btn">Forgot Password?</button>
+        </form>
+        <form id="forgotPasswordForm" class="admin-block hidden">
+          <div id="resetKeyStep" class="admin-block">
+            <label for="resetKey">Reset key</label>
+            <div class="password-field">
+              <input id="resetKey" type="password" placeholder="Enter reset key" />
+              <button type="button" class="password-toggle" data-target="resetKey">Show</button>
+            </div>
+            <button type="button" id="verifyResetKeyBtn">Verify Reset Key</button>
+          </div>
+          <div id="newPasswordStep" class="admin-block hidden">
+            <label for="newPassword">New password</label>
+            <div class="password-field">
+              <input id="newPassword" type="password" placeholder="Enter new password" />
+              <button type="button" class="password-toggle" data-target="newPassword">Show</button>
+            </div>
+            <button type="submit">Save New Password</button>
+          </div>
+        </form>
+      </section>
+    </main>
+    <script src="admin.js"></script>
+  </body>
+</html>

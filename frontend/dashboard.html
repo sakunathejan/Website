@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paw & Moods | Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="dashboard">
+    <div id="toast" class="toast hidden" aria-live="polite"></div>
+    <div id="detailsModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h3>Code Details</h3>
+        <pre id="detailsContent" class="details-content"></pre>
+        <button type="button" id="closeDetailsBtn" class="mini-btn">Close</button>
+      </div>
+    </div>
+    <div id="editModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h3>Edit Record</h3>
+        <form id="editForm" class="order-form-grid">
+          <input id="editCustomerName" type="text" placeholder="Customer Name" required />
+          <input id="editCustomerPhone" type="text" placeholder="Phone Number" required />
+          <input id="editOrderId" type="text" placeholder="Order ID" required readonly />
+          <input id="editProductType" type="text" placeholder="Product Type" required />
+          <input id="editOrderValue" type="number" min="0" step="0.01" placeholder="Order Value" required />
+          <input id="editPurchaseDate" type="date" required />
+          <select id="editIsUsed">
+            <option value="false">unused</option>
+            <option value="true">used</option>
+          </select>
+          <div class="modal-actions">
+            <button type="button" id="cancelEditBtn" class="mini-btn">Cancel</button>
+            <button type="submit">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id="adminApp" class="app-layout">
+      <!-- SIDEBAR -->
+      <aside class="app-sidebar" id="appSidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <span class="brand-icon">🐾</span>
+            <span class="brand-text">Paw & Moods</span>
+          </div>
+          <button class="mobile-close-btn" id="mobileCloseBtn">✕</button>
+        </div>
+        <nav class="sidebar-nav">
+          <button type="button" class="nav-btn active" data-section="dashboard">
+             <span class="icon">🏠</span><span class="text">Dashboard</span>
+          </button>
+          <button type="button" class="nav-btn" data-section="order">
+             <span class="icon">➕</span><span class="text">Add Order</span>
+          </button>
+          <button type="button" class="nav-btn" data-section="orders">
+             <span class="icon">📦</span><span class="text">Orders</span>
+          </button>
+          <button type="button" class="nav-btn" data-section="codes">
+             <span class="icon">🏷️</span><span class="text">Code Manager</span>
+          </button>
+          <button type="button" class="nav-btn" data-section="customers">
+             <span class="icon">👥</span><span class="text">Customers</span>
+          </button>
+          <button type="button" class="nav-btn" data-section="analytics">
+             <span class="icon">📈</span><span class="text">Analytics</span>
+          </button>
+          <div class="nav-divider"></div>
+          <button type="button" class="nav-btn" data-section="settings">
+             <span class="icon">⚙️</span><span class="text">Settings</span>
+          </button>
+        </nav>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <div class="app-main">
+        <header class="app-header">
+          <div class="header-left">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+            <h2 id="dynamicPageTitle">Dashboard</h2>
+          </div>
+          <div class="header-right">
+            <div class="search-wrap">
+              <span class="search-icon">🔍</span>
+              <input id="globalSearch" type="text" placeholder="Search codes, orders..." />
+            </div>
+            <div class="profile-section">
+              <div class="avatar">A</div>
+              <button type="button" id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+          </div>
+        </header>
+
+        <main class="app-content">
+          <div class="mobile-overlay" id="mobileOverlay"></div>
+
+          <section id="dashboardSection" class="pos-section">
+            <div id="statsGrid" class="stats-grid"></div>
+          </section>
+
+          <section id="orderSection" class="pos-section hidden">
+            <form id="addCodeForm" class="order-form-grid">
+              <input id="customerName" type="text" placeholder="Customer Name" required />
+              <input id="customerPhone" type="text" placeholder="Phone Number" required />
+              <input id="orderId" type="text" placeholder="Order ID (auto-generated)" readonly />
+              <input id="productType" type="text" placeholder="Product Type (Sticker/Journal)" required />
+              <input id="orderValue" type="number" min="0" step="0.01" placeholder="Order Value" required />
+              <input id="codeValue" type="text" placeholder="Reward Code (optional, auto if empty)" />
+              <input id="purchaseDate" type="date" required />
+              <select id="codeStatus">
+                <option value="unused">unused</option>
+                <option value="used">used</option>
+              </select>
+              <button type="submit">Create Order</button>
+            </form>
+          </section>
+
+          <section id="ordersSection" class="pos-section hidden">
+            <div id="orderCards" class="card-grid"></div>
+            <div class="pagination-row">
+              <button type="button" id="ordersPrevBtn" class="mini-btn">Prev</button>
+              <span id="ordersPageInfo">Page 1</span>
+              <button type="button" id="ordersNextBtn" class="mini-btn">Next</button>
+            </div>
+          </section>
+
+          <section id="codesSection" class="pos-section hidden">
+            <div class="filter-row">
+              <select id="statusFilter">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="used">Used</option>
+                <option value="expired">Expired</option>
+              </select>
+              <select id="typeFilter">
+                <option value="all">All Types</option>
+                <option value="W">Winner</option>
+                <option value="T">Try</option>
+              </select>
+            </div>
+            <div id="codeCards" class="card-grid"></div>
+            <div class="pagination-row">
+              <button type="button" id="codesPrevBtn" class="mini-btn">Prev</button>
+              <span id="codesPageInfo">Page 1</span>
+              <button type="button" id="codesNextBtn" class="mini-btn">Next</button>
+            </div>
+          </section>
+
+          <section id="customersSection" class="pos-section hidden">
+            <div id="customerCards" class="card-grid"></div>
+            <div class="pagination-row">
+              <button type="button" id="customersPrevBtn" class="mini-btn">Prev</button>
+              <span id="customersPageInfo">Page 1</span>
+              <button type="button" id="customersNextBtn" class="mini-btn">Next</button>
+            </div>
+          </section>
+
+          <section id="analyticsSection" class="pos-section hidden">
+            <div id="analyticsCards" class="stats-grid"></div>
+          </section>
+
+          <section id="settingsSection" class="pos-section hidden">
+            <h3 class="premium-header">Settings</h3>
+            <div class="settings-grid">
+              
+              <!-- GENERAL SETTINGS -->
+              <div class="settings-card">
+                <h4>General Settings</h4>
+                <form id="settingsGeneralForm" class="settings-form">
+                  <div class="form-group">
+                    <label>Business Name</label>
+                    <input type="text" id="setBusinessName" placeholder="Paw & Moods" />
+                  </div>
+                  <div class="form-group">
+                    <label>Contact Phone Number</label>
+                    <input type="text" id="setContactPhone" placeholder="Enter phone..." />
+                  </div>
+                  <div class="form-group">
+                    <label>WhatsApp Number</label>
+                    <input type="text" id="setGeneralWhatsapp" placeholder="+94 77 000 0000" />
+                  </div>
+                  <div class="form-group">
+                    <label>Default Currency</label>
+                    <input type="text" id="setCurrency" placeholder="Rs" />
+                  </div>
+                  <div class="form-group">
+                    <label>Timezone</label>
+                    <input type="text" id="setTimezone" placeholder="Asia/Colombo" />
+                  </div>
+                  <button type="submit" class="btn-primary">Save General Settings</button>
+                </form>
+              </div>
+
+              <!-- ADMIN & SECURITY -->
+              <div class="settings-card">
+                <h4>Admin & Security</h4>
+                <form id="settingsSecurityForm" class="settings-form">
+                  <div class="form-group">
+                    <label>Current Password</label>
+                    <div class="password-wrapper">
+                      <input type="password" id="setCurrentPassword" required />
+                      <button type="button" class="eye-btn" data-target="setCurrentPassword">👁️</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>New Password</label>
+                    <div class="password-wrapper">
+                      <input type="password" id="setNewPassword" required />
+                      <button type="button" class="eye-btn" data-target="setNewPassword">👁️</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div class="password-wrapper">
+                      <input type="password" id="setConfirmPassword" required />
+                      <button type="button" class="eye-btn" data-target="setConfirmPassword">👁️</button>
+                    </div>
+                  </div>
+                  <div class="form-group toggle-group">
+                    <label>Auto Logout (after 30 mins)</label>
+                    <label class="switch">
+                      <input type="checkbox" id="setAutoLogout" />
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                  <button type="submit" class="btn-primary">Update Security Settings</button>
+                </form>
+              </div>
+
+              <!-- REWARD SYSTEM SETTINGS -->
+              <div class="settings-card">
+                <h4>Reward System Settings</h4>
+                <form id="settingsRewardForm" class="settings-form">
+                  <div class="form-group">
+                    <label>Default Winner Reward (Items/Count)</label>
+                    <input type="number" id="setWinnerReward" placeholder="5" />
+                  </div>
+                  <div class="form-group">
+                    <label>Default Discount %</label>
+                    <input type="number" id="setDiscountPercent" placeholder="10" />
+                  </div>
+                  <div class="form-group">
+                    <label>Reward Expiry Duration (days)</label>
+                    <input type="number" id="setExpiryDays" placeholder="30" />
+                  </div>
+                  <div class="form-group">
+                    <label>Minimum Order Value</label>
+                    <input type="number" id="setMinOrder" placeholder="2000" />
+                  </div>
+                  
+                  <div class="form-group toggle-group">
+                    <label>Enable Winner rewards</label>
+                    <label class="switch">
+                      <input type="checkbox" id="setWinnerEnabled" checked />
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                  <div class="form-group toggle-group">
+                    <label>Enable Try rewards</label>
+                    <label class="switch">
+                      <input type="checkbox" id="setTryEnabled" checked />
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                  
+                  <button type="submit" class="btn-primary">Save Reward Settings</button>
+                </form>
+              </div>
+
+              <!-- WHATSAPP SETTINGS -->
+              <div class="settings-card">
+                <h4>WhatsApp Settings</h4>
+                <form id="settingsWhatsappForm" class="settings-form">
+                  <div class="form-group">
+                    <label>WhatsApp Number (for links)</label>
+                    <input type="text" id="setWaNumber" placeholder="+94 77 000 0000" />
+                  </div>
+                  <div class="form-group">
+                    <label>Winner Message Template</label>
+                    <textarea id="setWinnerTemplate" rows="3" placeholder="Hi Paw & Moods 💜 I want to claim my reward. Code: {code}"></textarea>
+                    <small>Placeholders: {code}, {reward}, {discount}</small>
+                  </div>
+                  <div class="form-group">
+                    <label>Try Message Template</label>
+                    <textarea id="setTryTemplate" rows="3" placeholder="Hi Paw & Moods 💜 Better luck next time. Code: {code}"></textarea>
+                    <small>Placeholders: {code}, {reward}, {discount}</small>
+                  </div>
+                  <button type="submit" class="btn-primary">Save WhatsApp Settings</button>
+                </form>
+              </div>
+
+              <!-- SYSTEM PREFERENCES -->
+              <div class="settings-card">
+                <h4>System Preferences</h4>
+                <form id="settingsPrefsForm" class="settings-form">
+                  <div class="form-group toggle-group">
+                    <label>Dark mode</label>
+                    <label class="switch">
+                      <input type="checkbox" id="setDarkMode" />
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                  <div class="form-group toggle-group">
+                    <label>Enable animations</label>
+                    <label class="switch">
+                      <input type="checkbox" id="setAnimations" checked />
+                      <span class="slider round"></span>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label>Default landing tab</label>
+                    <select id="setDefaultTab">
+                      <option value="dashboard">Dashboard</option>
+                      <option value="orders">Orders</option>
+                      <option value="codes">Code Manager</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn-primary">Save Preferences</button>
+                </form>
+              </div>
+
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script src="dashboard.js"></script>
+  </body>
+</html>

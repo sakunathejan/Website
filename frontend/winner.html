@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paw & Moods | Winner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body data-page="winner">
+  <main class="page-wrap fade-in">
+    <section class="card result-card">
+      <p class="eyebrow">💜 Lucky Unlock ✨</p>
+      <h1>🎉 You Won!</h1>
+      <p class="subtitle">
+        You unlocked a special reward from Paw & Moods 💜
+      </p>
+
+      <div class="reward-box">
+        <p>Pick ANY <strong id="dynamicValue">5</strong> stickers for FREE on your next order</p>
+        <p class="highlight" id="dynamicMessage">You get 5 free stickers</p>
+        <p class="code-tag">Code: <span id="savedCode">--</span></p>
+      </div>
+
+      <div class="conditions">
+        <p id="minOrderDisplay">📌 Minimum order Rs. 2000</p>
+        <p id="validDaysDisplay">⏳ Valid for 48 hours</p>
+      </div>
+
+      <ol class="steps-list">
+        <li>Click <strong>Start Shopping</strong></li>
+        <li>Choose your stickers</li>
+        <li>Enter your code or send it via WhatsApp</li>
+        <li>Confirm your order</li>
+      </ol>
+
+      <div class="button-row" style="flex-wrap: wrap; gap: 10px;">
+        <a class="btn btn-primary" id="startShoppingBtn" href="#" aria-label="Start Shopping">Start Shopping</a>
+        <a class="btn btn-secondary" id="whatsappBtn" href="#">Send via WhatsApp 🎁</a>
+        <button class="btn btn-secondary" id="copyMessageBtn" style="flex: 1 1 100%; border: 1px dashed var(--purple-400); background: transparent; color: var(--purple-600);">📋 Copy Message To Clipboard</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
