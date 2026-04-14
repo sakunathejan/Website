@@ -896,6 +896,15 @@ async function init() {
     window.location.href = "admin.html";
     return;
   }
+
+  try {
+    await apiRequest("/verify-admin");
+  } catch (error) {
+    clearToken();
+    window.location.href = "admin.html";
+    return;
+  }
+  
   document.getElementById("purchaseDate").value = formatDate(new Date());
   document.getElementById("orderId").value = "Auto-generated on save";
   
