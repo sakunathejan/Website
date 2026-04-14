@@ -114,15 +114,51 @@
               <input id="customerName" type="text" placeholder="Customer Name" required />
               <input id="customerPhone" type="tel" placeholder="Phone Number" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" required />
               <input id="orderId" type="text" placeholder="Order ID (auto-generated)" readonly />
-              <input id="productType" type="text" placeholder="Product Type (Sticker/Journal)" required />
+              <input id="productType" type="text" placeholder="Product Source (Sticker/Journal)" required />
               <input id="orderValue" type="number" min="0" step="0.01" placeholder="Order Value" onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'" required />
+              
+              <div style="grid-column: 1 / -1; background: var(--bg-deep); padding: 16px; border-radius: 12px;">
+                <h4 style="margin-bottom:12px;">Reward Strategy</h4>
+                <select id="rewardStrategySelect" style="margin-bottom:12px;">
+                  <option value="single">Single Item</option>
+                  <option value="bundle">Bundle (Multiple Items)</option>
+                  <option value="discount">Direct Discount</option>
+                  <option value="custom">Custom Description</option>
+                </select>
+                
+                <div id="rewardSinglePanel" class="reward-panel">
+                  <input type="text" id="rsProduct" placeholder="Product Name (e.g., Stickers)" />
+                  <input type="number" id="rsQty" placeholder="Quantity" min="1" value="1" />
+                </div>
+                
+                <div id="rewardBundlePanel" class="reward-panel hidden" style="display:none; gap: 8px;">
+                  <p>Define bundle items below. Adding directly in code.</p>
+                  <textarea id="rbItems" placeholder="stickers:3, journal:1" rows="2"></textarea>
+                </div>
+                
+                <div id="rewardDiscountPanel" class="reward-panel hidden" style="display:none;">
+                  <input type="number" id="rdPercent" placeholder="Discount Percentage (%)" min="1" max="100"/>
+                </div>
+
+                <div id="rewardCustomPanel" class="reward-panel hidden" style="display:none;">
+                  <input type="text" id="rcDesc" placeholder="e.g. Free Shipping Next Order"/>
+                </div>
+
+                <div style="margin-top:12px;">
+                  <select id="rewardBaseType">
+                    <option value="W">Display as Win Message</option>
+                    <option value="T">Display as Try Again Message</option>
+                  </select>
+                </div>
+              </div>
+
               <input id="codeValue" type="text" placeholder="Reward Code (optional, auto if empty)" />
               <input id="purchaseDate" type="date" required />
               <select id="codeStatus">
                 <option value="unused">unused</option>
                 <option value="used">used</option>
               </select>
-              <button type="submit">Create Order</button>
+              <button type="submit" style="grid-column: 1 / -1;">Create Order</button>
             </form>
           </section>
 
@@ -170,179 +206,334 @@
             <div id="analyticsCards" class="stats-grid"></div>
           </section>
 
+          
           <section id="settingsSection" class="pos-section hidden">
-            <h3 class="premium-header">Settings</h3>
-            <div class="settings-grid">
-              
-              <!-- GENERAL SETTINGS -->
-              <div class="settings-card">
-                <h4>General Settings</h4>
-                <form id="settingsGeneralForm" class="settings-form">
-                  <div class="form-group">
-                    <label>Business Name</label>
-                    <input type="text" id="setBusinessName" placeholder="Paw & Moods" />
-                  </div>
-                  <div class="form-group">
-                    <label>Contact Phone Number</label>
-                    <input type="tel" id="setContactPhone" placeholder="Enter phone..." oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
-                  </div>
-                  <div class="form-group">
-                    <label>WhatsApp Number</label>
-                    <input type="tel" id="setGeneralWhatsapp" placeholder="+94 77 000 0000" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
-                  </div>
-                  <div class="form-group">
-                    <label>Default Currency</label>
-                    <input type="text" id="setCurrency" placeholder="Rs" />
-                  </div>
-                  <div class="form-group">
-                    <label>Timezone</label>
-                    <input type="text" id="setTimezone" placeholder="Asia/Colombo" />
-                  </div>
-                  <button type="submit" class="btn-primary">Save General Settings</button>
-                </form>
-              </div>
-
-              <!-- ADMIN & SECURITY -->
-              <div class="settings-card">
-                <h4>Admin & Security</h4>
-                <form id="settingsSecurityForm" class="settings-form">
-                  <div class="form-group">
-                    <label>Current Password</label>
-                    <div class="password-wrapper">
-                      <input type="password" id="setCurrentPassword" required />
-                      <button type="button" class="eye-btn" data-target="setCurrentPassword">👁️</button>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label>New Password</label>
-                    <div class="password-wrapper">
-                      <input type="password" id="setNewPassword" required />
-                      <button type="button" class="eye-btn" data-target="setNewPassword">👁️</button>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label>Confirm Password</label>
-                    <div class="password-wrapper">
-                      <input type="password" id="setConfirmPassword" required />
-                      <button type="button" class="eye-btn" data-target="setConfirmPassword">👁️</button>
-                    </div>
-                  </div>
-                  <div class="form-group toggle-group">
-                    <label>Auto Logout (after 30 mins)</label>
-                    <label class="switch">
-                      <input type="checkbox" id="setAutoLogout" />
-                      <span class="slider round"></span>
-                    </label>
-                  </div>
-                  <button type="submit" class="btn-primary">Update Password</button>
-                </form>
-
-                <hr style="margin: 20px 0; border: none; border-top: 1px solid #eadcff;" />
-
-                <form id="settingsSecretForm" class="settings-form">
-                  <div class="form-group">
-                    <label>Secret Frontend Access Code</label>
-                    <input type="text" id="setSecretAdminCode" placeholder="admin777" />
-                    <small>The code customers would need if they found the hidden logo button.</small>
-                  </div>
-                  <button type="submit" class="btn-primary">Save Secret Code</button>
-                </form>
-              </div>
-
-              <!-- REWARD SYSTEM SETTINGS -->
-              <div class="settings-card">
-                <h4>Reward System Settings</h4>
-                <form id="settingsRewardForm" class="settings-form">
-                  <div class="form-group">
-                    <label>Default Winner Reward (Items/Count)</label>
-                    <input type="number" id="setWinnerReward" placeholder="5" />
-                  </div>
-                  <div class="form-group">
-                    <label>Default Discount %</label>
-                    <input type="number" id="setDiscountPercent" placeholder="10" />
-                  </div>
-                  <div class="form-group">
-                    <label>Reward Expiry Duration (days)</label>
-                    <input type="number" id="setExpiryDays" placeholder="30" />
-                  </div>
-                  <div class="form-group">
-                    <label>Minimum Order Value</label>
-                    <input type="number" id="setMinOrder" placeholder="2000" />
-                  </div>
-                  
-                  <div class="form-group toggle-group">
-                    <label>Enable Winner rewards</label>
-                    <label class="switch">
-                      <input type="checkbox" id="setWinnerEnabled" checked />
-                      <span class="slider round"></span>
-                    </label>
-                  </div>
-                  <div class="form-group toggle-group">
-                    <label>Enable Try rewards</label>
-                    <label class="switch">
-                      <input type="checkbox" id="setTryEnabled" checked />
-                      <span class="slider round"></span>
-                    </label>
-                  </div>
-                  
-                  <button type="submit" class="btn-primary">Save Reward Settings</button>
-                </form>
-              </div>
-
-              <!-- WHATSAPP SETTINGS -->
-              <div class="settings-card">
-                <h4>WhatsApp Settings</h4>
-                <form id="settingsWhatsappForm" class="settings-form">
-                  <div class="form-group">
-                    <label>WhatsApp Number (for links)</label>
-                    <input type="tel" id="setWaNumber" placeholder="+94 77 000 0000" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
-                  </div>
-                  <div class="form-group">
-                    <label>Winner Message Template</label>
-                    <textarea id="setWinnerTemplate" rows="3" placeholder="Hi Paw & Moods 💜 I want to claim my reward. Code: {code}"></textarea>
-                    <small>Placeholders: {code}, {reward}, {discount}</small>
-                  </div>
-                  <div class="form-group">
-                    <label>Try Message Template</label>
-                    <textarea id="setTryTemplate" rows="3" placeholder="Hi Paw & Moods 💜 Better luck next time. Code: {code}"></textarea>
-                    <small>Placeholders: {code}, {reward}, {discount}</small>
-                  </div>
-                  <button type="submit" class="btn-primary">Save WhatsApp Settings</button>
-                </form>
-              </div>
-
-              <!-- SYSTEM PREFERENCES -->
-              <div class="settings-card">
-                <h4>System Preferences</h4>
-                <form id="settingsPrefsForm" class="settings-form">
-                  <div class="form-group toggle-group">
-                    <label>Dark mode</label>
-                    <label class="switch">
-                      <input type="checkbox" id="setDarkMode" />
-                      <span class="slider round"></span>
-                    </label>
-                  </div>
-                  <div class="form-group toggle-group">
-                    <label>Enable animations</label>
-                    <label class="switch">
-                      <input type="checkbox" id="setAnimations" checked />
-                      <span class="slider round"></span>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label>Default landing tab</label>
-                    <select id="setDefaultTab">
-                      <option value="dashboard">Dashboard</option>
-                      <option value="orders">Orders</option>
-                      <option value="codes">Code Manager</option>
-                    </select>
-                  </div>
-                  <button type="submit" class="btn-primary">Save Preferences</button>
-                </form>
-              </div>
-
+            
+          <div class="settings-page">
+            <div class="settings-page-header">
+              <h3 class="premium-header" style="margin-bottom: 20px;">Settings</h3>
+              <nav class="settings-top-nav">
+                <button type="button" class="stg-nav-btn active" data-stg-target="stg-general">📄 General</button>
+                <button type="button" class="stg-nav-btn" data-stg-target="stg-format">🏷️ Code Format</button>
+                <button type="button" class="stg-nav-btn" data-stg-target="stg-rewards">🎁 Rewards</button>
+                <button type="button" class="stg-nav-btn" data-stg-target="stg-whatsapp">📱 WhatsApp</button>
+                <button type="button" class="stg-nav-btn" data-stg-target="stg-security">🔒 Security</button>
+                <button type="button" class="stg-nav-btn" data-stg-target="stg-prefs">⚙️ Preferences</button>
+              </nav>
             </div>
-          </section>
+
+            <div class="settings-content top-tab-content">
+
+                
+                <!-- GENERAL SETTINGS -->
+                <div id="stg-general" class="settings-tab-panel active">
+                  <form id="settingsGeneralForm" class="settings-form">
+                    <div class="settings-panel-header">
+                      <div>
+                        <h3>General Settings</h3>
+                        <p>Core business details and localization</p>
+                      </div>
+                      <button type="submit" class="btn-primary" style="margin:0; width:auto;">Save Changes</button>
+                    </div>
+                    <div class="settings-panel-body">
+                      <div class="field-group">
+                        <div class="form-group">
+                          <label>Business Name</label>
+                          <input type="text" id="setBusinessName" placeholder="Paw & Moods" />
+                        </div>
+                        <div class="form-group">
+                          <label>Contact Phone Number</label>
+                          <input type="tel" id="setContactPhone" placeholder="Enter phone..." oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
+                        </div>
+                        <div class="form-group">
+                          <label>WhatsApp Number</label>
+                          <input type="tel" id="setGeneralWhatsapp" placeholder="+94 77 000 0000" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
+                        </div>
+                      </div>
+                      <div class="field-group">
+                        <div class="form-group">
+                          <label>Default Currency</label>
+                          <input type="text" id="setCurrency" placeholder="Rs" />
+                        </div>
+                        <div class="form-group">
+                          <label>Timezone</label>
+                          <input type="text" id="setTimezone" placeholder="Asia/Colombo" />
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- CODE FORMAT SETTINGS -->
+                <div id="stg-format" class="settings-tab-panel">
+                  <form id="settingsCodeFormatForm" class="settings-form">
+                    <div class="settings-panel-header">
+                      <div>
+                        <h3>Dynamic Code Format</h3>
+                        <p>Manage code generation structure</p>
+                      </div>
+                      <button type="submit" class="btn-primary" style="margin:0; width:auto;">Save Format</button>
+                    </div>
+                    <div class="settings-panel-body">
+                      <div class="field-group">
+                        <h4>Basic Format</h4>
+                        <div class="form-group">
+                          <label>Prefix</label>
+                          <input type="text" id="setCfPrefix" placeholder="PM" />
+                        </div>
+                        <div class="form-group">
+                          <label>Year Format</label>
+                          <select id="setCfYear">
+                            <option value="2-digit">2-Digit (e.g. 26)</option>
+                            <option value="4-digit">4-Digit (e.g. 2026)</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label>Separator Layout</label>
+                          <input type="text" id="setCfSeparator" placeholder="-" />
+                        </div>
+                      </div>
+
+                      <div class="field-group">
+                        <h4>Optional Fields</h4>
+                        <div class="form-group toggle-group">
+                          <label>Include Product Code</label>
+                          <label class="switch">
+                            <input type="checkbox" id="setCfProduct" />
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                        <div class="form-group toggle-group">
+                          <label>Include Reward Type Indicator (W/T)</label>
+                          <label class="switch">
+                            <input type="checkbox" id="setCfRewardType" />
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div class="field-group">
+                        <h4>Sequence & Campaign Settings</h4>
+                        <div class="form-group toggle-group">
+                          <label>Enable Campaign / Batch ID</label>
+                          <label class="switch">
+                            <input type="checkbox" id="setCfCampaignToggle" />
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                        <div class="form-group" id="cfCampaignInputGroup" style="display:none;">
+                          <label>Campaign Name / ID</label>
+                          <input type="text" id="setCfCampaign" placeholder="e.g. NEWYEAR" />
+                        </div>
+                        <div class="form-group" style="margin-top: 15px;">
+                          <label>Sequence Code Length</label>
+                          <select id="setCfSeqLen">
+                            <option value="2">2 Digits (01)</option>
+                            <option value="3">3 Digits (001)</option>
+                            <option value="4">4 Digits (0001)</option>
+                            <option value="5">5 Digits (00001)</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label>Sequence Reset Type</label>
+                          <select id="setCfSeqReset">
+                            <option value="global">Global (Continuous counting)</option>
+                            <option value="monthly">Monthly Reset</option>
+                            <option value="daily">Daily Reset</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div class="field-group" style="background:var(--bg-deep);">
+                         <p style="margin-bottom:8px; font-size:0.9rem; color:#5b4685;"><strong>Live Preview Example:</strong></p>
+                         <p style="font-size:1.4rem; font-weight:700; color:var(--purple-600);"><span id="codePreviewBox">PM26-ST-W9999</span></p>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- REWARD SYSTEM SETTINGS -->
+                <div id="stg-rewards" class="settings-tab-panel">
+                  <form id="settingsRewardForm" class="settings-form">
+                    <div class="settings-panel-header">
+                      <div>
+                        <h3>Reward System</h3>
+                        <p>Configure defaults for winners and expirations</p>
+                      </div>
+                      <button type="submit" class="btn-primary" style="margin:0; width:auto;">Save Settings</button>
+                    </div>
+                    <div class="settings-panel-body">
+                      <div class="field-group">
+                        <div class="form-group">
+                          <label>Default Winner Reward (Items/Count)</label>
+                          <input type="number" id="setWinnerReward" placeholder="5" />
+                        </div>
+                        <div class="form-group">
+                          <label>Default Discount %</label>
+                          <input type="number" id="setDiscountPercent" placeholder="10" />
+                        </div>
+                        <div class="form-group">
+                          <label>Reward Expiry Duration (days)</label>
+                          <input type="number" id="setExpiryDays" placeholder="30" />
+                        </div>
+                        <div class="form-group">
+                          <label>Minimum Order Value</label>
+                          <input type="number" id="setMinOrder" placeholder="2000" />
+                        </div>
+                      </div>
+                      <div class="field-group">
+                        <div class="form-group toggle-group">
+                          <label>Enable Winner rewards</label>
+                          <label class="switch">
+                            <input type="checkbox" id="setWinnerEnabled" checked />
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                        <div class="form-group toggle-group">
+                          <label>Enable Try rewards</label>
+                          <label class="switch">
+                            <input type="checkbox" id="setTryEnabled" checked />
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- WHATSAPP SETTINGS -->
+                <div id="stg-whatsapp" class="settings-tab-panel">
+                  <form id="settingsWhatsappForm" class="settings-form">
+                    <div class="settings-panel-header">
+                      <div>
+                        <h3>WhatsApp Settings</h3>
+                        <p>Customize automated response templates</p>
+                      </div>
+                      <button type="submit" class="btn-primary" style="margin:0; width:auto;">Save Changes</button>
+                    </div>
+                    <div class="settings-panel-body">
+                      <div class="field-group">
+                        <div class="form-group">
+                          <label>WhatsApp Number (for links)</label>
+                          <input type="tel" id="setWaNumber" placeholder="+94 77 000 0000" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
+                        </div>
+                      </div>
+                      <div class="field-group">
+                        <div class="form-group">
+                          <label>Winner Message Template</label>
+                          <textarea id="setWinnerTemplate" rows="4" placeholder="Hi Paw & Moods 💜 I want to claim my reward. Code: {code}"></textarea>
+                          <small>Placeholders: {code}, {reward}, {discount}</small>
+                        </div>
+                        <div class="form-group">
+                          <label>Try Message Template</label>
+                          <textarea id="setTryTemplate" rows="4" placeholder="Hi Paw & Moods 💜 Better luck next time. Code: {code}"></textarea>
+                          <small>Placeholders: {code}, {reward}, {discount}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- ADMIN & SECURITY -->
+                <div id="stg-security" class="settings-tab-panel">
+                    <div class="settings-panel-header">
+                      <div>
+                        <h3>Security</h3>
+                        <p>Credentials and access control</p>
+                      </div>
+                    </div>
+                    <div class="settings-panel-body">
+                      <div class="field-group">
+                        <h4>Admin Password</h4>
+                        <form id="settingsSecurityForm" class="settings-form" style="gap:16px;">
+                          <div class="form-group">
+                            <label>Current Password</label>
+                            <div class="password-wrapper">
+                              <input type="password" id="setCurrentPassword" required />
+                              <button type="button" class="eye-btn" data-target="setCurrentPassword">👁️</button>
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <label>New Password</label>
+                            <div class="password-wrapper">
+                              <input type="password" id="setNewPassword" required />
+                              <button type="button" class="eye-btn" data-target="setNewPassword">👁️</button>
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <label>Confirm Password</label>
+                            <div class="password-wrapper">
+                              <input type="password" id="setConfirmPassword" required />
+                              <button type="button" class="eye-btn" data-target="setConfirmPassword">👁️</button>
+                            </div>
+                          </div>
+                          <div class="form-group toggle-group" style="margin-top:10px;">
+                            <label>Auto Logout (after 30 mins)</label>
+                            <label class="switch">
+                              <input type="checkbox" id="setAutoLogout" />
+                              <span class="slider round"></span>
+                            </label>
+                          </div>
+                          <button type="submit" class="btn-primary" style="max-width:200px;">Update Password</button>
+                        </form>
+                      </div>
+
+                      <div class="field-group">
+                        <h4>Secret Customer Code</h4>
+                        <form id="settingsSecretForm" class="settings-form" style="gap:16px;">
+                          <div class="form-group">
+                            <label>Fallback Frontend Access</label>
+                            <input type="text" id="setSecretAdminCode" placeholder="admin777" />
+                            <small>The code customers would need if they found the hidden logo button.</small>
+                          </div>
+                          <button type="submit" class="btn-primary" style="max-width:200px;">Save Secret Code</button>
+                        </form>
+                      </div>
+                    </div>
+                </div>
+
+                <!-- SYSTEM PREFERENCES -->
+                <div id="stg-prefs" class="settings-tab-panel">
+                  <form id="settingsPrefsForm" class="settings-form">
+                    <div class="settings-panel-header">
+                      <div>
+                        <h3>Preferences</h3>
+                        <p>Dashboard UI experience</p>
+                      </div>
+                      <button type="submit" class="btn-primary" style="margin:0; width:auto;">Save Prefs</button>
+                    </div>
+                    <div class="settings-panel-body">
+                      <div class="field-group">
+                        <div class="form-group toggle-group">
+                          <label>Dark mode</label>
+                          <label class="switch">
+                            <input type="checkbox" id="setDarkMode" />
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                        <div class="form-group toggle-group">
+                          <label>Enable animations</label>
+                          <label class="switch">
+                            <input type="checkbox" id="setAnimations" checked />
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                        <div class="form-group">
+                          <label>Default landing tab</label>
+                          <select id="setDefaultTab">
+                            <option value="dashboard">Dashboard</option>
+                            <option value="orders">Orders</option>
+                            <option value="codes">Code Manager</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+              </div>
+            </div>
+
         </main>
       </div>
     </div>

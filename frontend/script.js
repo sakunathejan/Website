@@ -197,14 +197,43 @@ async function setupResultPage() {
 
     codeEl.textContent = code;
     
+    
     let rewardAmount = getTailValue(code);
-    if (pageType === "winner" && settings.defaultWinnerReward) {
-      rewardAmount = settings.defaultWinnerReward;
-    } else if (pageType === "try" && settings.defaultDiscount) {
-      rewardAmount = settings.defaultDiscount;
+    if (pageType === "winner" && settings.defaultWinnerReward) rewardAmount = settings.defaultWinnerReward;
+    else if (pageType === "try" && settings.defaultDiscount) rewardAmount = settings.defaultDiscount;
+
+    let primaryDesc = pageType === "winner" ? `Pick ANY <strong>${rewardAmount}</strong> stickers for FREE on your next order` : `Get <strong>${rewardAmount}</strong>% OFF your next order`;
+    let highlightDesc = pageType === "winner" ? `You get ${rewardAmount} free stickers` : `You get ${rewardAmount}% OFF`;
+    let wtSubVal = rewardAmount;
+
+    if (data.formatVersion >= 2 && data.reward) {
+      if (data.reward.type === "single" && data.reward.items?.length > 0) {
+        let itm = data.reward.items[0];
+        primaryDesc = `You unlocked <strong>${itm.qty}x ${itm.product}</strong> for your next order!`;
+        highlightDesc = `You get ${itm.qty}x ${itm.product}`;
+        wtSubVal = `${itm.qty}x ${itm.product}`;
+      } else if (data.reward.type === "bundle" && data.reward.items?.length > 0) {
+        let str = data.reward.items.map(i => `${i.qty}x ${i.product}`).join(" + ");
+        primaryDesc = `You unlocked a bundle: <strong>${str}</strong>`;
+        highlightDesc = `You get ${str}`;
+        wtSubVal = str;
+      } else if (data.reward.type === "discount") {
+        primaryDesc = `Get <strong>${data.reward.discount}</strong>% OFF your next order`;
+        highlightDesc = `You get ${data.reward.discount}% OFF`;
+        wtSubVal = `${data.reward.discount}%`;
+      } else if (data.reward.type === "custom") {
+        primaryDesc = `<strong>${data.reward.description}</strong>`;
+        highlightDesc = `${data.reward.description}`;
+        wtSubVal = data.reward.description;
+      }
     }
 
-    valueEl.textContent = String(rewardAmount);
+    if (valueEl && valueEl.parentNode) {
+      valueEl.parentNode.innerHTML = primaryDesc;
+    }
+    if (messageEl) {
+      messageEl.innerHTML = highlightDesc;
+    }
 
     const minOrderDisplay = document.getElementById("minOrderDisplay");
     if (minOrderDisplay && settings.minOrderValue) {
@@ -219,7 +248,6 @@ async function setupResultPage() {
     }
 
     if (pageType === "winner") {
-      messageEl.textContent = `You get ${rewardAmount} free stickers`;
       const startShoppingBtn = document.getElementById("startShoppingBtn");
       const whatsappBtn = document.getElementById("whatsappBtn");
       
@@ -228,7 +256,7 @@ async function setupResultPage() {
 I just claimed my reward \u{1F389}
 
 Code: ${code}
-I won: ANY ${rewardAmount} FREE stickers \u{1F381}
+I won: ${wtSubVal} \u{1F381}
 
 Please guide me on how to redeem it \u{1F60A}`;
 
@@ -297,7 +325,7 @@ Please guide me on how to redeem it \u{1F60A}`;
       return;
     }
 
-    messageEl.textContent = `You get ${rewardAmount}% OFF`;
+    
     const shopNowBtn = document.getElementById("shopNowBtn");
     const discountBtn = document.getElementById("discountBtn");
     

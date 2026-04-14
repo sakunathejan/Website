@@ -10,7 +10,6 @@ const PORT = process.env.PORT || 3000;
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/paw-moods";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "pawmoods123";
-const CODE_PATTERN = /^PM26-[A-Z0-9]{4}-[WT]\d{4}$/;
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const FRONTEND_DIR = path.join(__dirname, "../frontend");
 const ADMIN_TOKEN_TTL_MS = 8 * 60 * 60 * 1000;
@@ -24,14 +23,10 @@ app.use(express.static(FRONTEND_DIR));
 
 const codeSchema = new mongoose.Schema(
   {
-    code: {
-      type: String,
-      required: true,
-      unique: true,
-      uppercase: true,
-      trim: true,
-    },
-    type: { type: String, enum: ["W", "T"], required: true },
+    code: { type: String, required: true, unique: true, uppercase: true, trim: true },
+    type: { type: String, required: true }, 
+    formatVersion: { type: Number, default: 2 },
+    reward: { type: mongoose.Schema.Types.Mixed, default: {} },
     purchaseDate: { type: Date, required: true },
     isUsed: { type: Boolean, default: false },
     customerName: { type: String, required: true, trim: true },
@@ -40,6 +35,9 @@ const codeSchema = new mongoose.Schema(
     productType: { type: String, default: "Sticker", trim: true },
     orderValue: { type: Number, default: 0 },
     isExpired: { type: Boolean, default: false },
+    sequenceNumber: { type: Number },
+    sequenceType: { type: String },
+    campaign: { type: String },
   },
   { timestamps: true },
 );
@@ -62,6 +60,17 @@ const settingsSchema = new mongoose.Schema({
     whatsappNumber: { type: String, default: "" },
     currency: { type: String, default: "Rs" },
     timezone: { type: String, default: "Asia/Colombo" }
+  },
+  codeFormat: {
+    prefix: { type: String, default: "PM" },
+    yearFormat: { type: String, default: "2-digit" },
+    includeProduct: { type: Boolean, default: true },
+    includeRewardType: { type: Boolean, default: true },
+    separator: { type: String, default: "-" },
+    sequenceLength: { type: Number, default: 4 },
+    sequenceResetType: { type: String, default: "global" },
+    includeCampaign: { type: Boolean, default: false },
+    campaignName: { type: String, default: "" }
   },
   rewards: {
     defaultWinnerReward: { type: Number, default: 5 },
@@ -150,6 +159,51 @@ function matchesStoredPassword(password, storedValue) {
 
 function cleanCode(raw = "") {
   return raw.trim().toUpperCase();
+}
+
+async function generateDynamicCode(settings, productType, rewardBaseType, RewardCodeModel) {
+  const cf = settings?.codeFormat || {
+    prefix: "PM", yearFormat: "2-digit", includeProduct: true, includeRewardType: true, separator: "-",
+    sequenceLength: 4, sequenceResetType: "global", includeCampaign: false, campaignName: ""
+  };
+  
+  let parts = [];
+  if (cf.prefix) parts.push(cf.prefix);
+  if (cf.includeCampaign && cf.campaignName) parts.push(cf.campaignName.toUpperCase());
+  if (cf.yearFormat === "2-digit") parts.push(String(new Date().getFullYear()).slice(-2));
+  else if (cf.yearFormat === "4-digit") parts.push(String(new Date().getFullYear()));
+  
+  if (cf.includeProduct) {
+    const pCode = (productType || "ST").substring(0,2).toUpperCase();
+    parts.push(pCode);
+  }
+  if (cf.includeRewardType && rewardBaseType) {
+    parts.push(rewardBaseType.toUpperCase());
+  }
+  
+  // Calculate Sequence
+  let query = {};
+  let now = new Date();
+  if (cf.sequenceResetType === 'daily') {
+    let startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    query = { createdAt: { $gte: startOfDay } };
+  } else if (cf.sequenceResetType === 'monthly') {
+    let startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    query = { createdAt: { $gte: startOfMonth } };
+  }
+  
+  const count = await RewardCodeModel.countDocuments(query);
+  const nextSeq = count + 1;
+  const seqStr = String(nextSeq).padStart(cf.sequenceLength || 4, "0");
+  
+  parts.push(seqStr);
+  
+  return { 
+    code: parts.join(cf.separator || "-"), 
+    sequenceNumber: nextSeq,
+    sequenceType: cf.sequenceResetType || "global",
+    campaign: (cf.includeCampaign && cf.campaignName) ? cf.campaignName.toUpperCase() : ""
+  };
 }
 
 function getCodeType(code) {
@@ -333,22 +387,29 @@ app.post("/admin/verify-reset-key", (req, res) => {
 
 app.post("/add-code", verifyAdmin, async (req, res) => {
   try {
-    const code = cleanCode(req.body?.code);
+    const settings = await getSettings();
+    let code = cleanCode(req.body?.code);
     const purchaseDate = req.body?.purchaseDate;
     const isUsed = Boolean(req.body?.isUsed);
     const customerName = (req.body?.customerName || "").trim();
     const customerPhone = (req.body?.customerPhone || "").trim();
     const productType = (req.body?.productType || "Sticker").trim();
     const orderValue = Number(req.body?.orderValue || 0);
+    const rewardData = req.body?.reward || { type: "single", items: [{ product: "Unknown", qty: 1 }], description: "Standard Reward" };
+    const rewardBaseType = req.body?.rewardBaseType || "W"; // "W" or "T"
 
-    if (!CODE_PATTERN.test(code)) {
-      return res.status(400).json({ message: "Invalid code format" });
+    let sequenceNumber = 0;
+    let sequenceType = settings.codeFormat?.sequenceResetType || "global";
+    let campaign = "";
+    if (!code) {
+      const genResult = await generateDynamicCode(settings, productType, rewardBaseType, RewardCode);
+      code = genResult.code;
+      sequenceNumber = genResult.sequenceNumber;
+      sequenceType = genResult.sequenceType;
+      campaign = genResult.campaign;
     }
 
-    const type = getCodeType(code);
-    if (!type) {
-      return res.status(400).json({ message: "Code must include -W or -T" });
-    }
+    const type = rewardBaseType;
 
     const parsedDate = new Date(purchaseDate);
     if (Number.isNaN(parsedDate.getTime())) {
@@ -361,7 +422,6 @@ app.post("/add-code", verifyAdmin, async (req, res) => {
         .json({ message: "Customer name and phone are required" });
     }
 
-    const settings = await getSettings();
     const expiryDays = settings.rewards.expiryDays || 30;
 
     let createdRecord = null;
@@ -373,11 +433,16 @@ app.post("/add-code", verifyAdmin, async (req, res) => {
         createdRecord = await RewardCode.create({
           code,
           type,
+          formatVersion: 2,
+          reward: rewardData,
           purchaseDate: parsedDate,
           isUsed,
           customerName,
           customerPhone,
           orderId,
+          sequenceNumber,
+          sequenceType,
+          campaign,
           productType,
           orderValue: Number.isNaN(orderValue) ? 0 : orderValue,
           isExpired: isExpired(parsedDate, expiryDays),
@@ -489,17 +554,7 @@ app.put("/codes/:code", verifyAdmin, async (req, res) => {
 app.get("/validate-code/:code", async (req, res) => {
   try {
     const code = cleanCode(req.params.code);
-    if (
-      !code.startsWith("PM") ||
-      !code.includes("26") ||
-      !CODE_PATTERN.test(code)
-    ) {
-      return res.status(400).json({
-        status: "invalid",
-        valid: false,
-        reason: "INVALID_FORMAT",
-      });
-    }
+    if (!code) { return res.status(400).json({ status: "invalid" }); }
 
     const entry = await RewardCode.findOne({ code });
     if (!entry) {
@@ -549,6 +604,8 @@ app.get("/validate-code/:code", async (req, res) => {
       status: "valid",
       valid: true,
       type: entry.type,
+      formatVersion: entry.formatVersion || 1,
+      reward: entry.reward
     });
   } catch (error) {
     return res.status(500).json({
@@ -654,7 +711,8 @@ app.get("/api/public-settings", async (req, res) => {
       currency: settings.general.currency,
       winnerEnabled: settings.rewards.winnerEnabled,
       tryEnabled: settings.rewards.tryEnabled,
-      expiryDays: settings.rewards.expiryDays
+      expiryDays: settings.rewards.expiryDays,
+      codeFormat: settings.codeFormat
     });
   } catch(error) {
     return res.status(500).json({ message: "Failed to fetch public settings" });
@@ -689,6 +747,7 @@ app.put("/settings", verifyAdmin, async (req, res) => {
     if (payload.whatsapp) Object.assign(settings.whatsapp, payload.whatsapp);
     if (payload.preferences) Object.assign(settings.preferences, payload.preferences);
     if (payload.security) Object.assign(settings.security, payload.security);
+    if (payload.codeFormat) Object.assign(settings.codeFormat, payload.codeFormat);
     
     await settings.save();
     return res.json({ message: "Settings updated successfully", settings });

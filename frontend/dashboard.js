@@ -201,19 +201,25 @@ function detectTypeFromCode(code) {
   return null;
 }
 
+function formatRewardPreview(reward, fallbackLabel) {
+  if (!reward) return fallbackLabel;
+  if (reward.type === "single" && reward.items?.length > 0) return `${reward.items[0].qty}x ${reward.items[0].product}`;
+  if (reward.type === "bundle" && reward.items?.length > 0) return reward.items.map(i => `${i.qty}x ${i.product}`).join(" + ");
+  if (reward.type === "discount") return `${reward.discount}% OFF`;
+  if (reward.type === "custom") return reward.description;
+  return fallbackLabel;
+}
 function enrichRecord(item) {
   const expiryStatus = getExpiryStatus(item.purchaseDate);
+  const baseLbl = item.type === "W" ? "Winner" : "Try";
   return {
     ...item,
     expiryStatus,
-    statusLabel: item.isUsed
-      ? "used"
-      : expiryStatus === "expired"
-        ? "expired"
-        : "active",
-    rewardLabel: item.type === "W" ? "Winner" : "Try",
+    statusLabel: item.isUsed ? "used" : expiryStatus === "expired" ? "expired" : "active",
+    rewardLabel: item.formatVersion >= 2 ? formatRewardPreview(item.reward, baseLbl) : baseLbl,
   };
 }
+
 
 function applyFilters(items) {
   const q = (globalSearch.value || "").trim().toLowerCase();
@@ -705,6 +711,20 @@ async function loadSettings() {
     const tz = document.getElementById("setTimezone");
     if(tz) tz.value = data.general?.timezone || "";
 
+    // Code Format
+    const cfPrefix = document.getElementById("setCfPrefix");
+    if(cfPrefix) cfPrefix.value = data.codeFormat?.prefix !== undefined ? data.codeFormat.prefix : "PM";
+    const cfYear = document.getElementById("setCfYear");
+    if(cfYear) cfYear.value = data.codeFormat?.yearFormat || "2-digit";
+    const cfSeparator = document.getElementById("setCfSeparator");
+    if(cfSeparator) cfSeparator.value = data.codeFormat?.separator !== undefined ? data.codeFormat.separator : "-";
+    const cfProduct = document.getElementById("setCfProduct");
+    if(cfProduct) cfProduct.checked = data.codeFormat?.includeProduct !== false;
+    const cfRewardType = document.getElementById("setCfRewardType");
+    if(cfRewardType) cfRewardType.checked = data.codeFormat?.includeRewardType !== false;
+
+    if (typeof updateCodePreview === "function") updateCodePreview();
+
     // Rewards
     const wReward = document.getElementById("setWinnerReward");
     if(wReward) wReward.value = data.rewards?.defaultWinnerReward || "";
@@ -791,6 +811,66 @@ function bindSettingsForms() {
         document.title = `${newBusinessName || "Paw & Moods"} | Dashboard`;
       }
     });
+  });
+
+  const formCf = document.getElementById("settingsCodeFormatForm");
+  if(formCf) formCf.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitWithLoading(e.submitter, async () => {
+      await updateSettings({
+        codeFormat: {
+          prefix: document.getElementById("setCfPrefix").value,
+          yearFormat: document.getElementById("setCfYear").value,
+          separator: document.getElementById("setCfSeparator").value,
+          includeProduct: document.getElementById("setCfProduct").checked,
+          includeRewardType: document.getElementById("setCfRewardType").checked,
+          sequenceLength: parseInt(document.getElementById("setCfSeqLen").value) || 4,
+          sequenceResetType: document.getElementById("setCfSeqReset").value || "global",
+          includeCampaign: document.getElementById("setCfCampaignToggle").checked,
+          campaignName: document.getElementById("setCfCampaign").value.toUpperCase()
+        }
+      });
+    });
+  });
+
+  window.updateCodePreview = function() {
+    const box = document.getElementById("codePreviewBox");
+    if(!box) return;
+    
+    const pref = document.getElementById("setCfPrefix")?.value;
+    const yFormat = document.getElementById("setCfYear")?.value || "2-digit";
+    const sep = document.getElementById("setCfSeparator")?.value || "";
+    const incProd = document.getElementById("setCfProduct")?.checked;
+    const incType = document.getElementById("setCfRewardType")?.checked;
+    
+    const campTog = document.getElementById("setCfCampaignToggle")?.checked;
+    const campName = document.getElementById("setCfCampaign")?.value.toUpperCase();
+    
+    // Toggle input box visibility dynamically during preview edits
+    const campGroup = document.getElementById("cfCampaignInputGroup");
+    if (campGroup) campGroup.style.display = campTog ? 'block' : 'none';
+
+    const sLen = parseInt(document.getElementById("setCfSeqLen")?.value) || 4;
+    
+    let parts = [];
+    if (pref) parts.push(pref);
+    if (campTog && campName) parts.push(campName);
+    parts.push(yFormat === "2-digit" ? new Date().getFullYear().toString().slice(-2) : new Date().getFullYear().toString());
+    if (incProd) parts.push("ST");
+    if (incType) parts.push("W");
+    
+    // Mock Sequence Number
+    parts.push("1".padStart(sLen, "0"));
+    
+    box.textContent = parts.join(sep);
+  };
+
+  ["#setCfPrefix", "#setCfYear", "#setCfSeparator", "#setCfProduct", "#setCfRewardType", "#setCfCampaignToggle", "#setCfCampaign", "#setCfSeqLen", "#setCfSeqReset"].forEach(sel => {
+    const el = document.querySelector(sel);
+    if(el) {
+      el.addEventListener("input", updateCodePreview);
+      el.addEventListener("change", updateCodePreview); 
+    }
   });
 
   const formRew = document.getElementById("settingsRewardForm");
@@ -947,3 +1027,39 @@ init().catch((error) => {
   window.location.href = "admin.html";
   showToast(error.message || "Session expired");
 });
+function bindRewardUI() {
+  const sel = document.getElementById("rewardStrategySelect");
+  if(!sel) return;
+  sel.addEventListener("change", (e) => {
+    document.getElementById("rewardSinglePanel").style.display = 'none';
+    document.getElementById("rewardBundlePanel").style.display = 'none';
+    document.getElementById("rewardDiscountPanel").style.display = 'none';
+    document.getElementById("rewardCustomPanel").style.display = 'none';
+    
+    if(e.target.value === 'single') document.getElementById("rewardSinglePanel").style.display = 'flex';
+    if(e.target.value === 'bundle') document.getElementById("rewardBundlePanel").style.display = 'flex';
+    if(e.target.value === 'discount') document.getElementById("rewardDiscountPanel").style.display = 'block';
+    if(e.target.value === 'custom') document.getElementById("rewardCustomPanel").style.display = 'block';
+  });
+}
+bindRewardUI();
+function bindSettingsTabs() {
+  const btns = document.querySelectorAll('.stg-nav-btn');
+  const panels = document.querySelectorAll('.settings-tab-panel');
+  if(!btns.length) return;
+  
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      
+      btn.classList.add('active');
+      const target = document.getElementById(btn.getAttribute('data-stg-target'));
+      if(target) target.classList.add('active');
+      
+      // Scroll to top of settings content so user doesn't stay scrolled down
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+}
+bindSettingsTabs();

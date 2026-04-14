@@ -1002,3 +1002,122 @@ input:checked + .slider:before {
     font-size: 1.1rem;
   }
 }
+
+/* TABBED SETTINGS LAYOUT (TOP NAV) */
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.settings-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.settings-top-nav {
+  display: flex;
+  gap: 12px;
+  background: #fff;
+  border-bottom: 2px solid #f0e6ff;
+  padding-bottom: 10px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.settings-top-nav::-webkit-scrollbar {
+  height: 6px;
+}
+.settings-top-nav::-webkit-scrollbar-thumb {
+  background: #d8cbeb;
+  border-radius: 4px;
+}
+
+.stg-nav-btn {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #6a5a8f;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 30px; /* Pill style */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+}
+.stg-nav-btn:hover {
+  background: #fdfafd;
+  color: var(--purple-700);
+}
+.stg-nav-btn.active {
+  background: var(--purple-600);
+  color: #fff;
+  border-color: var(--purple-600);
+  box-shadow: 0 4px 12px rgba(159, 122, 234, 0.25);
+}
+
+.settings-content.top-tab-content {
+  flex: 1;
+}
+.settings-tab-panel {
+  display: none;
+  animation: fadeIn 0.3s ease;
+  background: #ffffff;
+  border: 1px solid #f0e6ff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(91, 59, 146, 0.02);
+  overflow: hidden;
+}
+.settings-tab-panel.active {
+  display: block;
+}
+.settings-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  background: #fdfafd;
+  border-bottom: 1px solid #f0e6ff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.settings-panel-header h3 {
+  color: var(--purple-900);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.settings-panel-header p {
+  color: #6a5a8f;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+.settings-panel-body {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.field-group {
+  background: #fcfaff;
+  border: 1px solid #eadcff;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.field-group h4 {
+  color: var(--purple-800);
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed #eadcff;
+  padding-bottom: 12px;
+}
+@media (max-width: 768px) {
+  .settings-top-nav {
+    padding-bottom: 16px;
+  }
+}
