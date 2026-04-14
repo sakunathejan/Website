@@ -12,8 +12,13 @@
     />
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+    <script>
+      if (!sessionStorage.getItem("pawMoodsAdminToken")) {
+        window.location.replace("admin.html");
+      }
+    </script>
   </head>
-  <body data-page="dashboard">
+  <body data-page="dashboard" style="opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
     <div id="toast" class="toast hidden" aria-live="polite"></div>
     <div id="detailsModal" class="modal-overlay hidden">
       <div class="modal-card">

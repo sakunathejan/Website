@@ -899,6 +899,8 @@ async function init() {
 
   try {
     await apiRequest("/verify-admin");
+    document.body.style.opacity = "1";
+    document.body.style.pointerEvents = "auto";
   } catch (error) {
     clearToken();
     window.location.href = "admin.html";
