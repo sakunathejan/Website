@@ -433,6 +433,15 @@ async function applyGlobalBranding() {
         document.title = document.title.replace("Paw & Moods", bName);
       }
 
+      document.querySelectorAll(".brand-text").forEach(el => {
+        el.textContent = bName;
+      });
+
+      document.querySelectorAll(".subtitle").forEach(el => {
+        if (el.textContent.includes("Paw & Moods")) {
+          el.textContent = el.textContent.replace("Paw & Moods", bName);
+        }
+      });
     }
   } catch(e) {}
 }
