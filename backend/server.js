@@ -232,6 +232,7 @@ function verifyAdmin(req, res, next) {
   if (Date.now() > expiresAt) {
     adminTokens.delete(token);
     return res.status(403).json({ message: "Unauthorized: Expired session" });
+  }
   return next();
 }
 

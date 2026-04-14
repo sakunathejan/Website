@@ -32,10 +32,10 @@
         <h3>Edit Record</h3>
         <form id="editForm" class="order-form-grid">
           <input id="editCustomerName" type="text" placeholder="Customer Name" required />
-          <input id="editCustomerPhone" type="text" placeholder="Phone Number" required />
+          <input id="editCustomerPhone" type="tel" placeholder="Phone Number" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" required />
           <input id="editOrderId" type="text" placeholder="Order ID" required readonly />
           <input id="editProductType" type="text" placeholder="Product Type" required />
-          <input id="editOrderValue" type="number" min="0" step="0.01" placeholder="Order Value" required />
+          <input id="editOrderValue" type="number" min="0" step="0.01" placeholder="Order Value" onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'" required />
           <input id="editPurchaseDate" type="date" required />
           <select id="editIsUsed">
             <option value="false">unused</option>
@@ -112,10 +112,10 @@
           <section id="orderSection" class="pos-section hidden">
             <form id="addCodeForm" class="order-form-grid">
               <input id="customerName" type="text" placeholder="Customer Name" required />
-              <input id="customerPhone" type="text" placeholder="Phone Number" required />
+              <input id="customerPhone" type="tel" placeholder="Phone Number" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" required />
               <input id="orderId" type="text" placeholder="Order ID (auto-generated)" readonly />
               <input id="productType" type="text" placeholder="Product Type (Sticker/Journal)" required />
-              <input id="orderValue" type="number" min="0" step="0.01" placeholder="Order Value" required />
+              <input id="orderValue" type="number" min="0" step="0.01" placeholder="Order Value" onkeydown="return event.key !== 'e' && event.key !== 'E' && event.key !== '-' && event.key !== '+'" required />
               <input id="codeValue" type="text" placeholder="Reward Code (optional, auto if empty)" />
               <input id="purchaseDate" type="date" required />
               <select id="codeStatus">
@@ -184,11 +184,11 @@
                   </div>
                   <div class="form-group">
                     <label>Contact Phone Number</label>
-                    <input type="text" id="setContactPhone" placeholder="Enter phone..." />
+                    <input type="tel" id="setContactPhone" placeholder="Enter phone..." oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
                   </div>
                   <div class="form-group">
                     <label>WhatsApp Number</label>
-                    <input type="text" id="setGeneralWhatsapp" placeholder="+94 77 000 0000" />
+                    <input type="tel" id="setGeneralWhatsapp" placeholder="+94 77 000 0000" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
                   </div>
                   <div class="form-group">
                     <label>Default Currency</label>
@@ -295,7 +295,7 @@
                 <form id="settingsWhatsappForm" class="settings-form">
                   <div class="form-group">
                     <label>WhatsApp Number (for links)</label>
-                    <input type="text" id="setWaNumber" placeholder="+94 77 000 0000" />
+                    <input type="tel" id="setWaNumber" placeholder="+94 77 000 0000" oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
                   </div>
                   <div class="form-group">
                     <label>Winner Message Template</label>
