@@ -680,8 +680,18 @@ async function loadSettings() {
     if (!data) return;
 
     // General
+    const businessNameString = data.general?.businessName || "Paw & Moods";
+    
+    if (document.title.includes("Paw & Moods")) {
+      document.title = document.title.replace("Paw & Moods", businessNameString);
+    }
+    const dashSidebarTitle = document.querySelector(".sidebar-header h2");
+    if (dashSidebarTitle && dashSidebarTitle.textContent.includes("Paw & Moods")) {
+      dashSidebarTitle.textContent = dashSidebarTitle.textContent.replace("Paw & Moods", businessNameString);
+    }
+
     const bName = document.getElementById("setBusinessName");
-    if(bName) bName.value = data.general?.businessName || "";
+    if(bName) bName.value = businessNameString;
     const cPhone = document.getElementById("setContactPhone");
     if(cPhone) cPhone.value = data.general?.contactPhone || "";
     const wNum = document.getElementById("setGeneralWhatsapp");

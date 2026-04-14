@@ -173,3 +173,23 @@ showLoginOnly("");
 forgotPasswordForm?.classList.add("hidden");
 resetKeyStep?.classList.remove("hidden");
 newPasswordStep?.classList.add("hidden");
+
+async function applyAdminBranding() {
+  try {
+    const response = await fetch(`${API_BASE}/api/public-settings`);
+    if (response.ok) {
+      const settings = await response.json();
+      const bName = settings.businessName || "Paw & Moods";
+
+      if (document.title.includes("Paw & Moods")) {
+        document.title = document.title.replace("Paw & Moods", bName);
+      }
+      const posTitle = document.querySelector(".pos-login-card h1");
+      if (posTitle && posTitle.textContent.includes("Paw & Moods")) {
+        posTitle.textContent = posTitle.textContent.replace("Paw & Moods", bName);
+      }
+    }
+  } catch (e) {}
+}
+
+applyAdminBranding();
