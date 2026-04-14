@@ -259,7 +259,8 @@ async function setupResultPage() {
       const startShoppingBtn = document.getElementById("startShoppingBtn");
       const whatsappBtn = document.getElementById("whatsappBtn");
       
-      const defaultWinnerMessage = `Hi Paw & Moods \u{1F49C}
+      const bName = settings.businessName || "Paw & Moods";
+      const defaultWinnerMessage = `Hi ${bName} \u{1F49C}
 I just claimed my reward \u{1F389}
 
 Code: ${code}
@@ -336,7 +337,8 @@ Please guide me on how to redeem it \u{1F60A}`;
     const shopNowBtn = document.getElementById("shopNowBtn");
     const discountBtn = document.getElementById("discountBtn");
     
-    const defaultTryMessage = `Hi Paw & Moods \u{1F49C}
+    const bName = settings.businessName || "Paw & Moods";
+    const defaultTryMessage = `Hi ${bName} \u{1F49C}
 I just checked my reward \u{1F381}
 
 Code: ${code}
@@ -418,3 +420,26 @@ if (document.body.dataset.page === "home") {
 ) {
   setupResultPage();
 }
+
+async function applyGlobalBranding() {
+  try {
+    const sRes = await fetch(`${API_BASE}/api/public-settings`);
+    if (sRes.ok) {
+      const settings = await sRes.json();
+      const bName = settings.businessName || "Paw & Moods";
+
+      // Update document title dynamically
+      if (document.title.includes("Paw & Moods")) {
+        document.title = document.title.replace("Paw & Moods", bName);
+      }
+
+      // Update the main index eyebrow (secretAdminTrigger)
+      const secretTrigger = document.getElementById("secretAdminTrigger");
+      if (secretTrigger && secretTrigger.textContent.includes("Paw & Moods")) {
+        secretTrigger.textContent = `\u{1F43E} ${bName} \u{2728}`;
+      }
+    }
+  } catch(e) {}
+}
+
+applyGlobalBranding();

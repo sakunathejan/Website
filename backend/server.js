@@ -641,6 +641,7 @@ app.get("/api/public-settings", async (req, res) => {
   try {
     const settings = await getSettings();
     return res.json({
+      businessName: settings.general.businessName || "Paw & Moods",
       whatsappNumber: settings.whatsapp.whatsappNumber || settings.general.whatsappNumber || settings.general.contactPhone,
       winnerTemplate: settings.whatsapp.winnerTemplate,
       tryTemplate: settings.whatsapp.tryTemplate,
@@ -680,11 +681,11 @@ app.put("/settings", verifyAdmin, async (req, res) => {
     const payload = req.body || {};
     const settings = await getSettings();
     
-    if (payload.general) settings.general = { ...settings.general, ...payload.general };
-    if (payload.rewards) settings.rewards = { ...settings.rewards, ...payload.rewards };
-    if (payload.whatsapp) settings.whatsapp = { ...settings.whatsapp, ...payload.whatsapp };
-    if (payload.preferences) settings.preferences = { ...settings.preferences, ...payload.preferences };
-    if (payload.security) settings.security = { ...settings.security, ...payload.security };
+    if (payload.general) Object.assign(settings.general, payload.general);
+    if (payload.rewards) Object.assign(settings.rewards, payload.rewards);
+    if (payload.whatsapp) Object.assign(settings.whatsapp, payload.whatsapp);
+    if (payload.preferences) Object.assign(settings.preferences, payload.preferences);
+    if (payload.security) Object.assign(settings.security, payload.security);
     
     await settings.save();
     return res.json({ message: "Settings updated successfully", settings });
