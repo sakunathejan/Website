@@ -188,6 +188,10 @@ async function setupResultPage() {
       if (sRes.ok) settings = await sRes.json();
     } catch(e) {}
 
+    // Unlock the UI
+    document.body.style.opacity = "1";
+    document.body.style.pointerEvents = "auto";
+
     const rawWaNum = settings.whatsappNumber || WHATSAPP_NUMBER;
     const dynamicWaNum = String(rawWaNum).replace(/[^0-9]/g, "");
 
