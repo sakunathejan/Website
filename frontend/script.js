@@ -150,46 +150,6 @@ function setupHomePage() {
     }
   });
 
-  // --- SECRET ADMIN TRIGGER ---
-  // If user clicks the top "Paw & Moods" eyebrow text 5 times quickly, prompt for admin
-  const secretTrigger = document.getElementById("secretAdminTrigger");
-  if (secretTrigger) {
-    let clickCount = 0;
-    let clickTimer = null;
-
-    secretTrigger.addEventListener("click", async () => {
-      clickCount++;
-      if (clickCount >= 5) {
-        clickCount = 0;
-        const secretCode = prompt("Enter Admin Access Code:");
-        
-        if (secretCode !== null) {
-          try {
-            const response = await fetch(`${API_BASE}/api/verify-secret`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ code: secretCode })
-            });
-            const data = await response.json();
-            
-            if (data.valid) {
-              window.location.href = "admin.html";
-            } else {
-              alert("Incorrect access code.");
-            }
-          } catch (e) {
-            alert("Error validating access code.");
-          }
-        }
-      }
-
-      clearTimeout(clickTimer);
-      clickTimer = setTimeout(() => {
-        clickCount = 0; // Reset if they don't click fast enough
-      }, 2000); // 2 second window to complete 5 clicks
-    });
-  }
-
 }
 
 async function setupResultPage() {

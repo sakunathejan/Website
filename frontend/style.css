@@ -965,3 +965,26 @@ input:checked + .slider:before {
     padding: 16px;
   }
 }
+
+.app-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-bottom: 1rem;
+}
+
+.admin-link {
+  font-size: 0.75rem;
+  color: var(--text-color, #64748b);
+  opacity: 0.4;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.admin-link:hover {
+  opacity: 0.8;
+  color: var(--purple-600, #7c3aed);
+}
