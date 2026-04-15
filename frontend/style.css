@@ -1052,9 +1052,9 @@ input:checked + .slider:before {
   color: var(--purple-700);
 }
 .stg-nav-btn.active {
-  background: var(--purple-600);
+  background: var(--purple-700);
   color: #fff;
-  border-color: var(--purple-600);
+  border-color: var(--purple-700);
   box-shadow: 0 4px 12px rgba(159, 122, 234, 0.25);
 }
 
@@ -1110,7 +1110,7 @@ input:checked + .slider:before {
   gap: 16px;
 }
 .field-group h4 {
-  color: var(--purple-800);
+  color: var(--purple-900);
   font-size: 1.05rem;
   margin-bottom: 8px;
   border-bottom: 1px dashed #eadcff;
@@ -1120,4 +1120,83 @@ input:checked + .slider:before {
   .settings-top-nav {
     padding-bottom: 16px;
   }
+}
+\n
+/* DARK MODE */
+html.dark-mode body {
+  background: linear-gradient(160deg, #0f0a14 0%, #15101d 45%, #181320 100%);
+  color: #eae0f5;
+  --text: #c0b3d8;
+  --purple-900: #dcbfff;
+  --white: #1a1525;
+}
+
+html.dark-mode body .card, 
+html.dark-mode body .settings-tab-panel, 
+html.dark-mode body .settings-sidebar, 
+html.dark-mode body .settings-top-nav, 
+html.dark-mode body .settings-panel-header, 
+html.dark-mode body .table-container,
+html.dark-mode body tbody tr {
+  background: #191422;
+  border-color: #31214e;
+  border-bottom-color: #31214e;
+}
+
+html.dark-mode body .app-sidebar {
+  background: #1a1626;
+  border-color: #31214e;
+}
+
+html.dark-mode body .field-group, 
+html.dark-mode body .pos-modal, 
+html.dark-mode body .modal-card, 
+html.dark-mode body .details-content,
+html.dark-mode body th {
+  background: #251e36;
+  border-color: #422678;
+  color: #c0b3d8;
+}
+
+html.dark-mode body input, 
+html.dark-mode body select, 
+html.dark-mode body textarea {
+  background: #130e1a;
+  color: #eae0f5;
+  border-color: #4b3671;
+}
+
+html.dark-mode body .stg-nav-btn {
+  color: #a894c7;
+}
+
+html.dark-mode body .stg-nav-btn:hover {
+  background: #281d3d;
+}
+
+html.dark-mode body .settings-panel-header h3, 
+html.dark-mode body .premium-header, 
+html.dark-mode body h4,
+html.dark-mode body .value-highlight {
+  color: #eae0f5;
+}
+
+html.dark-mode body .filter-row select {
+  background-color: #191422;
+  color: #fff;
+  border-color: #31214e;
+}
+
+html.dark-mode body .menu-btn {
+  color: #a894c7;
+}
+
+html.dark-mode body .menu-btn:hover {
+  background-color: #281d3d;
+  color: #fff;
+}
+
+html.dark-mode body .menu-btn.active {
+  background-color: var(--purple-700);
+  color: #fff;
 }

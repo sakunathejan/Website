@@ -1,6 +1,5 @@
-const API_BASE = window.API_BASE || "https://website-m71e.onrender.com";
+const API_BASE = window.API_BASE || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:3000" : "https://website-m71e.onrender.com");
 const ADMIN_TOKEN_KEY = "pawMoodsAdminToken";
-const DASH_SECTION_KEY = "pawMoodsDashboardSection";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 const logoutBtn = document.getElementById("logoutBtn");
@@ -421,7 +420,6 @@ function renderAll() {
 }
 
 function switchSection(target) {
-  sessionStorage.setItem(DASH_SECTION_KEY, target);
   Object.entries(sections).forEach(([key, section]) => {
     if (section) section.classList.toggle("hidden", key !== target);
   });
@@ -683,6 +681,7 @@ editForm?.addEventListener("submit", async (event) => {
 async function loadSettings() {
   try {
     const data = await apiRequest("/settings");
+    console.log("FETCHED SETTINGS RESPONSE:", data);
     if (!data) return;
 
     // General
@@ -732,8 +731,10 @@ async function loadSettings() {
     if(dPercent) dPercent.value = data.rewards?.defaultDiscount || "";
     const expDays = document.getElementById("setExpiryDays");
     if(expDays) expDays.value = data.rewards?.expiryDays || "";
-    const mOrder = document.getElementById("setMinOrder");
-    if(mOrder) mOrder.value = data.rewards?.minOrderValue || "";
+    const mOrderWinner = document.getElementById("setMinOrderWinner");
+    if(mOrderWinner) mOrderWinner.value = data.rewards?.minOrderWinner ?? data.rewards?.minOrderValue ?? "";
+    const mOrderTry = document.getElementById("setMinOrderTry");
+    if(mOrderTry) mOrderTry.value = data.rewards?.minOrderTry ?? data.rewards?.minOrderValue ?? "";
     const wEnabled = document.getElementById("setWinnerEnabled");
     if(wEnabled) wEnabled.checked = data.rewards?.winnerEnabled !== false;
     const tEnabled = document.getElementById("setTryEnabled");
@@ -755,9 +756,7 @@ async function loadSettings() {
     const defTab = document.getElementById("setDefaultTab");
     if(defTab) defTab.value = data.preferences?.defaultTab || "dashboard";
 
-    // Security
-    const sSecret = document.getElementById("setSecretAdminCode");
-    if (sSecret) sSecret.value = data.security?.secretAdminCode || "admin777";
+
   } catch (err) {
     console.error(err);
   }
@@ -877,16 +876,19 @@ function bindSettingsForms() {
   if(formRew) formRew.addEventListener("submit", (e) => {
     e.preventDefault();
     submitWithLoading(e.submitter, async () => {
-      await updateSettings({
+      const payload = {
         rewards: {
           defaultWinnerReward: Number(document.getElementById("setWinnerReward").value),
           defaultDiscount: Number(document.getElementById("setDiscountPercent").value),
           expiryDays: Number(document.getElementById("setExpiryDays").value),
-          minOrderValue: Number(document.getElementById("setMinOrder").value),
+          minOrderWinner: Number(document.getElementById("setMinOrderWinner").value),
+          minOrderTry: Number(document.getElementById("setMinOrderTry").value),
           winnerEnabled: document.getElementById("setWinnerEnabled").checked,
           tryEnabled: document.getElementById("setTryEnabled").checked,
         }
-      });
+      };
+      console.log("SAVING REWARDS PAYLOAD:", payload);
+      await updateSettings(payload);
     });
   });
 
@@ -944,17 +946,6 @@ function bindSettingsForms() {
     });
   });
 
-  const formSecret = document.getElementById("settingsSecretForm");
-  if(formSecret) formSecret.addEventListener("submit", (e) => {
-    e.preventDefault();
-    submitWithLoading(e.submitter, async () => {
-      await updateSettings({
-        security: {
-          secretAdminCode: document.getElementById("setSecretAdminCode").value
-        }
-      });
-    });
-  });
 
   document.querySelectorAll(".eye-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -993,15 +984,10 @@ async function init() {
   await loadSettings();
   bindSettingsForms();
 
-  const lastSection = sessionStorage.getItem(DASH_SECTION_KEY);
   const selectDef = document.getElementById("setDefaultTab");
   const defaultTab = selectDef ? selectDef.value : "dashboard";
   
-  if (lastSection && sections[lastSection]) {
-    switchSection(lastSection);
-  } else {
-    switchSection(defaultTab || "dashboard");
-  }
+  switchSection(defaultTab || "dashboard");
 
   // Mobile menu events
   mobileMenuBtn?.addEventListener("click", () => {
@@ -1063,3 +1049,37 @@ function bindSettingsTabs() {
   });
 }
 bindSettingsTabs();
+
+const _dmTog = document.getElementById('setDarkMode');
+if (_dmTog) {
+  _dmTog.addEventListener('change', (e) => {
+    if (e.target.checked) document.documentElement.classList.add('dark-mode');
+    else document.documentElement.classList.remove('dark-mode');
+  });
+}
+function initDarkMode() {
+  const toggle = document.getElementById("setDarkMode");
+  if (!toggle) return;
+
+  // 1. Check LocalStorage on Load
+  const currentTheme = localStorage.getItem("theme");
+  if (currentTheme === "dark") {
+    document.documentElement.classList.add("dark-mode");
+    toggle.checked = true;
+  } else {
+    document.documentElement.classList.remove("dark-mode");
+    toggle.checked = false;
+  }
+
+  // 2. Add Listener Action Instantly Toggle Screen
+  toggle.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      document.documentElement.classList.add("dark-mode");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark-mode");
+      localStorage.setItem("theme", "light");
+    }
+  });
+}
+initDarkMode();

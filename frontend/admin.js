@@ -1,4 +1,4 @@
-const API_BASE = window.API_BASE || "https://website-m71e.onrender.com";
+const API_BASE = window.API_BASE || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:3000" : "https://website-m71e.onrender.com");
 const ADMIN_TOKEN_KEY = "pawMoodsAdminToken";
 const loginWrap = document.getElementById("loginWrap");
 const loginForm = document.getElementById("adminLoginForm");

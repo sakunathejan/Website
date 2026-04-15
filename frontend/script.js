@@ -1,7 +1,7 @@
 const STORAGE_KEY = "pawMoodsCode";
 const ACCESS_KEY = "pawMoodsRewardAccess";
 const TYPE_KEY = "pawMoodsRewardType";
-const API_BASE = window.API_BASE || "https://website-m71e.onrender.com";
+const API_BASE = window.API_BASE || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:3000" : "https://website-m71e.onrender.com");
 const WHATSAPP_NUMBER = window.PAWS_WHATSAPP_NUMBER || "+940783418485";
 
 function getTailValue(code) {
@@ -236,15 +236,20 @@ async function setupResultPage() {
     }
 
     const minOrderDisplay = document.getElementById("minOrderDisplay");
-    if (minOrderDisplay && settings.minOrderValue) {
-      minOrderDisplay.textContent = `📌 Minimum order ${settings.currency || "Rs."} ${settings.minOrderValue}`;
+    if (minOrderDisplay) {
+      const minVal = pageType === "winner" 
+                       ? (settings.minOrderWinner ?? settings.minOrderValue) 
+                       : (settings.minOrderTry ?? settings.minOrderValue);
+      if (minVal) {
+        minOrderDisplay.textContent = `Valid on orders above ${settings.currency || "Rs."} ${minVal}`;
+      }
     }
 
     const validDaysDisplay = document.getElementById("validDaysDisplay");
     if (validDaysDisplay && settings.expiryDays) {
       // If exactly 48 or 72 hrs logic desired by user, 1 day = 24hrs.
       // But typically settings.expiryDays is in days, let's display days.
-      validDaysDisplay.textContent = `⏳ Valid for ${settings.expiryDays} days`;
+      validDaysDisplay.textContent = `⏳ Valid for ${settings.expiryDays} days from the day of purchase`;
     }
 
     if (pageType === "winner") {

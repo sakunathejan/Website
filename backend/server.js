@@ -77,6 +77,8 @@ const settingsSchema = new mongoose.Schema({
     defaultDiscount: { type: Number, default: 10 },
     expiryDays: { type: Number, default: 30 },
     minOrderValue: { type: Number, default: 2000 },
+    minOrderWinner: { type: Number, default: 2000 },
+    minOrderTry: { type: Number, default: 1000 },
     winnerEnabled: { type: Boolean, default: true },
     tryEnabled: { type: Boolean, default: true }
   },
@@ -708,6 +710,8 @@ app.get("/api/public-settings", async (req, res) => {
       defaultDiscount: settings.rewards.defaultDiscount,
       defaultWinnerReward: settings.rewards.defaultWinnerReward,
       minOrderValue: settings.rewards.minOrderValue,
+      minOrderWinner: settings.rewards.minOrderWinner ?? settings.rewards.minOrderValue,
+      minOrderTry: settings.rewards.minOrderTry ?? settings.rewards.minOrderValue,
       currency: settings.general.currency,
       winnerEnabled: settings.rewards.winnerEnabled,
       tryEnabled: settings.rewards.tryEnabled,
@@ -742,12 +746,12 @@ app.put("/settings", verifyAdmin, async (req, res) => {
     const payload = req.body || {};
     const settings = await getSettings();
     
-    if (payload.general) Object.assign(settings.general, payload.general);
-    if (payload.rewards) Object.assign(settings.rewards, payload.rewards);
-    if (payload.whatsapp) Object.assign(settings.whatsapp, payload.whatsapp);
-    if (payload.preferences) Object.assign(settings.preferences, payload.preferences);
-    if (payload.security) Object.assign(settings.security, payload.security);
-    if (payload.codeFormat) Object.assign(settings.codeFormat, payload.codeFormat);
+    if (payload.general) { Object.assign(settings.general, payload.general); settings.markModified('general'); }
+    if (payload.rewards) { Object.assign(settings.rewards, payload.rewards); settings.markModified('rewards'); }
+    if (payload.whatsapp) { Object.assign(settings.whatsapp, payload.whatsapp); settings.markModified('whatsapp'); }
+    if (payload.preferences) { Object.assign(settings.preferences, payload.preferences); settings.markModified('preferences'); }
+    if (payload.security) { Object.assign(settings.security, payload.security); settings.markModified('security'); }
+    if (payload.codeFormat) { Object.assign(settings.codeFormat, payload.codeFormat); settings.markModified('codeFormat'); }
     
     await settings.save();
     return res.json({ message: "Settings updated successfully", settings });

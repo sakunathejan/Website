@@ -17,7 +17,7 @@
         window.location.replace("admin.html");
       }
     </script>
-  </head>
+  <script>if (localStorage.getItem("theme") === "dark") document.documentElement.classList.add("dark-mode");</script></head>
   <body data-page="dashboard" style="opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
     <div id="toast" class="toast hidden" aria-live="polite"></div>
     <div id="detailsModal" class="modal-overlay hidden">
@@ -346,7 +346,7 @@
                       
                       <div class="field-group" style="background:var(--bg-deep);">
                          <p style="margin-bottom:8px; font-size:0.9rem; color:#5b4685;"><strong>Live Preview Example:</strong></p>
-                         <p style="font-size:1.4rem; font-weight:700; color:var(--purple-600);"><span id="codePreviewBox">PM26-ST-W9999</span></p>
+                         <p style="font-size:1.4rem; font-weight:700; color:var(--purple-700);"><span id="codePreviewBox">PM26-ST-W9999</span></p>
                       </div>
                     </div>
                   </form>
@@ -377,8 +377,12 @@
                           <input type="number" id="setExpiryDays" placeholder="30" />
                         </div>
                         <div class="form-group">
-                          <label>Minimum Order Value</label>
-                          <input type="number" id="setMinOrder" placeholder="2000" />
+                          <label>Minimum Order for Winner (Free Rewards)</label>
+                          <input type="number" id="setMinOrderWinner" placeholder="2000" />
+                        </div>
+                        <div class="form-group">
+                          <label>Minimum Order for Try (Discount Rewards)</label>
+                          <input type="number" id="setMinOrderTry" placeholder="1000" />
                         </div>
                       </div>
                       <div class="field-group">
@@ -478,17 +482,7 @@
                         </form>
                       </div>
 
-                      <div class="field-group">
-                        <h4>Secret Customer Code</h4>
-                        <form id="settingsSecretForm" class="settings-form" style="gap:16px;">
-                          <div class="form-group">
-                            <label>Fallback Frontend Access</label>
-                            <input type="text" id="setSecretAdminCode" placeholder="admin777" />
-                            <small>The code customers would need if they found the hidden logo button.</small>
-                          </div>
-                          <button type="submit" class="btn-primary" style="max-width:200px;">Save Secret Code</button>
-                        </form>
-                      </div>
+
                     </div>
                 </div>
 
